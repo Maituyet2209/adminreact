@@ -1,9 +1,61 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
+import {
+  Box,
+  Typography,
+  Button,
+  TextField,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  useTheme,
+} from "@mui/material";
 import { tokens } from "../../../theme";
-import { Box, useTheme, Typography, Button, TextField } from "@mui/material";
 
 const AddSong = ({ onSave, onCancel }) => {
+  const [categories, setCategories] = useState([]);
+  const [languages, setLanguages] = useState([]);
+  const [artists, setArtists] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const categoriesResponse = await axios.get(
+          "http://localhost:5000/api/cate"
+        );
+        const languagesResponse = await axios.get(
+          "http://localhost:5000/api/lang"
+        );
+        const artistsResponse = await axios.get(
+          "http://localhost:5000/api/artist"
+        );
+
+        if (Array.isArray(categoriesResponse.data.data)) {
+          setCategories(categoriesResponse.data.data);
+        } else {
+          console.error("Invalid data format for categories");
+        }
+
+        if (Array.isArray(languagesResponse.data.data)) {
+          setLanguages(languagesResponse.data.data);
+        } else {
+          console.error("Invalid data format for languages");
+        }
+
+        if (Array.isArray(artistsResponse.data.data)) {
+          setArtists(artistsResponse.data.data);
+        } else {
+          console.error("Invalid data format for artists");
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [songData, setSongData] = useState({
@@ -15,9 +67,9 @@ const AddSong = ({ onSave, onCancel }) => {
     IDNgheSi: null,
     IDNgonNgu: null,
     LuotNghe: 0,
-    fileText: "",
-    fileImage: "",
-    fileMusic: "",
+    fileText: null,
+    fileImage: null,
+    fileMusic: null,
   });
 
   const handleFileChange = (event, fileType) => {
@@ -35,14 +87,19 @@ const AddSong = ({ onSave, onCancel }) => {
     formData.append("TenBH", songData.TenBH);
     formData.append("LuotTai", songData.LuotTai);
     formData.append("NgayPH", songData.NgayPH);
-    formData.append("IDAlbum", songData.IDAlbum);
+
     formData.append("IDTheLoai", songData.IDTheLoai);
     formData.append("IDNgheSi", songData.IDNgheSi);
-    formData.append("IDNgonNgu", songData.IDNgonNgu);
+
     formData.append("LuotNghe", songData.LuotNghe);
     formData.append("fileText", songData.fileText);
     formData.append("fileImage", songData.fileImage);
     formData.append("fileMusic", songData.fileMusic);
+
+    formData.append(
+      "IDNgonNgu",
+      songData.IDNgonNgu !== null ? songData.IDNgonNgu : ""
+    );
 
     try {
       const response = await axios.post(
@@ -56,6 +113,10 @@ const AddSong = ({ onSave, onCancel }) => {
       console.error("Error adding song:", error);
     }
   };
+  const handleCancel = (event) => {
+    event.preventDefault();
+    onCancel();
+  };
 
   return (
     <Box
@@ -66,69 +127,110 @@ const AddSong = ({ onSave, onCancel }) => {
         top: "50%",
         left: "50%",
         transform: "translate(-50%, -50%)",
-        borderRadius: "8px",
-        width: "80%",
-        maxWidth: "500px",
-        height: "auto",
         padding: "20px",
+        borderRadius: "8px",
+        width: "400px",
       }}
     >
+      <Typography
+        variant="h5"
+        color={colors.greenAccent[400]}
+        fontWeight="bold"
+        textAlign="center"
+        mb={3}
+      >
+        Add Song
+      </Typography>
       <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: "15px" }}>
-          <Typography variant="h6" sx={{ color: colors.greenAccent[300] }}>
-            Add Song
-          </Typography>
-        </div>
-
-        <div style={{ marginBottom: "15px" }}>
-          <label>
-            Tên Bài Hát:
-            <input
-              type="text"
-              value={songData.TenBH}
-              onChange={(e) =>
-                setSongData({ ...songData, TenBH: e.target.value })
-              }
-            />
-          </label>
-        </div>
-
+        <Box mt={2} sx={{ display: "flex", flexDirection: "row" }}></Box>
         <TextField
-          label="Ngày Phát Hành"
-          type="date"
-          value={songData.NgayPH}
-          onChange={(e) => setSongData({ ...songData, NgayPH: e.target.value })}
-          sx={{ flex: 1, marginRight: "10px" }}
-          margin="normal"
+          label="Tên bài hát"
+          value={songData.TenBH}
+          onChange={(e) => setSongData({ ...songData, TenBH: e.target.value })}
+          sx={{ width: "50%" }}
+          mb={2}
         />
-
-        <div style={{ marginBottom: "15px" }}>
-          <label>
-            Thể Loại:
-            <input
-              type="text"
+        <Box sx={{}}>
+          <Typography>Ngày phát hành: </Typography>
+          <TextField
+            type="date"
+            value={songData.NgayPH}
+            onChange={(e) =>
+              setSongData({ ...songData, NgayPH: e.target.value })
+            }
+            sx={{ width: "50%" }}
+            mb={2}
+          />
+        </Box>
+        <Box
+          mt={2}
+          sx={{ display: "flex", alignItems: "center", flexDirection: "row" }}
+        >
+          <FormControl
+            mb={2}
+            sx={{ width: "45%", marginTop: "5px", marginRight: "10px" }}
+          >
+            <InputLabel id="theloai-label">Thể Loại</InputLabel>
+            <Select
+              labelId="theloai-label"
               value={songData.IDTheLoai}
               onChange={(e) =>
                 setSongData({ ...songData, IDTheLoai: e.target.value })
               }
-            />
-          </label>
-        </div>
+            >
+              <MenuItem value="">
+                <em>Chọn Thể Loại</em>
+              </MenuItem>
+              {categories.map((category) => (
+                <MenuItem key={category.id} value={category.id}>
+                  {category.TenTheLoai}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-        <div style={{ marginBottom: "15px" }}>
-          <label>
-            Nghệ Sĩ:
-            <input
-              type="text"
-              value={songData.IDNgheSi}
+          <FormControl mb={2} sx={{ width: "45%", marginTop: "5px" }}>
+            <InputLabel id="ngonngu-label">Ngôn ngữ</InputLabel>
+            <Select
+              labelId="ngonngu-label"
+              value={songData.IDNgonNgu}
               onChange={(e) =>
-                setSongData({ ...songData, IDNgheSi: e.target.value })
+                setSongData({ ...songData, IDNgonNgu: e.target.value })
               }
-            />
-          </label>
-        </div>
+            >
+              <MenuItem value="">
+                <em>Chọn Ngôn ngữ</em>
+              </MenuItem>
+              {languages.map((language) => (
+                <MenuItem key={language.ID} value={language.ID}>
+                  {language.TenNgonNgu}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
 
-        <div style={{ marginBottom: "15px" }}>
+        <FormControl mb={2} sx={{ width: "50%", marginTop: "10px" }}>
+          <InputLabel id="nghesi-label">Nghệ sĩ</InputLabel>
+          <Select
+            labelId="nghesi-label"
+            value={songData.IDNgheSi}
+            onChange={(e) =>
+              setSongData({ ...songData, IDNgheSi: e.target.value })
+            }
+          >
+            <MenuItem value="">
+              <em>Chọn Nghệ sĩ</em>
+            </MenuItem>
+            {artists.map((artist) => (
+              <MenuItem key={artist.id} value={artist.id}>
+                {artist.HoTen}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <Box>
           <label>
             File Lời Nhạc:
             <input
@@ -136,9 +238,9 @@ const AddSong = ({ onSave, onCancel }) => {
               onChange={(e) => handleFileChange(e, "fileText")}
             />
           </label>
-        </div>
+        </Box>
 
-        <div style={{ marginBottom: "15px" }}>
+        <Box>
           <label>
             File Ảnh Bìa:
             <input
@@ -146,9 +248,9 @@ const AddSong = ({ onSave, onCancel }) => {
               onChange={(e) => handleFileChange(e, "fileImage")}
             />
           </label>
-        </div>
+        </Box>
 
-        <div style={{ marginBottom: "15px" }}>
+        <Box>
           <label>
             File Âm Thanh:
             <input
@@ -156,9 +258,9 @@ const AddSong = ({ onSave, onCancel }) => {
               onChange={(e) => handleFileChange(e, "fileMusic")}
             />
           </label>
-        </div>
+        </Box>
 
-        <div style={{ marginBottom: "15px" }}>
+        <Box mt={3}>
           <Button
             type="submit"
             variant="contained"
@@ -171,13 +273,13 @@ const AddSong = ({ onSave, onCancel }) => {
           </Button>
           <Button
             type="button"
-            onClick={onCancel}
+            onClick={handleCancel}
             variant="outlined"
-            sx={{ marginLeft: "10px" }}
+            sx={{ marginLeft: 2 }}
           >
             Cancel
           </Button>
-        </div>
+        </Box>
       </form>
     </Box>
   );
