@@ -114,14 +114,14 @@ const Songs = () => {
       const response = await axios.get("http://localhost:5000/api/song");
       setApiData(response.data.data);
 
-      setIsEditFormVisible(false);
+      setIsAddFormVisible(false);
     } catch (error) {
       console.error("Error saving new song:", error);
     }
   };
 
   const handleAddSongCancel = () => {
-    setIsEditFormVisible(false);
+    setIsAddFormVisible(false);
   };
 
   return (

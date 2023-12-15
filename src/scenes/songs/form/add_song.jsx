@@ -88,18 +88,16 @@ const AddSong = ({ onSave, onCancel }) => {
     formData.append("LuotTai", songData.LuotTai);
     formData.append("NgayPH", songData.NgayPH);
 
-    formData.append("IDTheLoai", songData.IDTheLoai);
-    formData.append("IDNgheSi", songData.IDNgheSi);
+    if (songData.IDTheLoai) formData.append("IDTheLoai", songData.IDTheLoai);
+    if (songData.IDNgheSi) formData.append("IDNgheSi", songData.IDNgheSi);
 
     formData.append("LuotNghe", songData.LuotNghe);
     formData.append("fileText", songData.fileText);
     formData.append("fileImage", songData.fileImage);
     formData.append("fileMusic", songData.fileMusic);
 
-    formData.append(
-      "IDNgonNgu",
-      songData.IDNgonNgu !== null ? songData.IDNgonNgu : ""
-    );
+    if (songData.IDNgonNgu) formData.append("IDNgonNgu", songData.IDNgonNgu);
+
 
     try {
       const response = await axios.post(
@@ -182,7 +180,7 @@ const AddSong = ({ onSave, onCancel }) => {
                 <em>Chọn Thể Loại</em>
               </MenuItem>
               {categories.map((category) => (
-                <MenuItem key={category.id} value={category.id}>
+                <MenuItem key={category.ID} value={category.ID}>
                   {category.TenTheLoai}
                 </MenuItem>
               ))}
@@ -194,8 +192,7 @@ const AddSong = ({ onSave, onCancel }) => {
             <Select
               labelId="ngonngu-label"
               value={songData.IDNgonNgu}
-              onChange={(e) =>
-                setSongData({ ...songData, IDNgonNgu: e.target.value })
+              onChange={(e) => setSongData({ ...songData, IDNgonNgu: e.target.value })
               }
             >
               <MenuItem value="">
@@ -216,14 +213,18 @@ const AddSong = ({ onSave, onCancel }) => {
             labelId="nghesi-label"
             value={songData.IDNgheSi}
             onChange={(e) =>
+            {
+              console.log(e.target.value)
+
               setSongData({ ...songData, IDNgheSi: e.target.value })
+              }
             }
           >
             <MenuItem value="">
               <em>Chọn Nghệ sĩ</em>
             </MenuItem>
             {artists.map((artist) => (
-              <MenuItem key={artist.id} value={artist.id}>
+              <MenuItem key={artist.ID} value={artist.ID}>
                 {artist.HoTen}
               </MenuItem>
             ))}
